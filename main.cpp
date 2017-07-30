@@ -69,7 +69,7 @@ struct sPlanet
 	float Radius;
 	int ChancePower, ChanceEnemy;
 	int GainByPower, LoseByEnemy;
-	bool IsHome;
+	bool IsHome, Cleared;
 };
 
 static vector<sPlanet> Planets;
@@ -202,6 +202,7 @@ static struct sCosmicInflux : public ZL_Application
 			p.Mat.SetUniformFloat("facw", RAND_RANGE(1,5));
 			p.Mat.SetUniformFloat("facc", RAND_RANGE(3,10));
 			p.IsHome = false;
+			p.Cleared = false;
 			Planets.push_back(p);
 		}
 		sPlanet Home;
@@ -260,6 +261,7 @@ static struct sCosmicInflux : public ZL_Application
 				Mode = MODE_LANDED;
 				LandedPlanet = TravelPlanet;
 				Player.Power = ZL_Math::Clamp(Player.Power + LandedPlanet->GainByPower - LandedPlanet->LoseByEnemy, 0.f, PowerStart);
+				LandedPlanet->Cleared = true;
 			}
 			if (Player.Power <= SMALL_NUMBER && Mode == MODE_RUNNING)
 			{
@@ -312,11 +314,10 @@ static struct sCosmicInflux : public ZL_Application
 			{
 				const float itZDist = it->Mtx.GetOrigin().z - Player.Pos.z;
 				if (itZDist < -2.f || itZDist > 60.f) continue;
-				const bool IsTravel = (&*it == TravelPlanet || &*it == LastTravelPlanet);
 				if (itZDist > 30.f) it->Mat.SetUniformFloat(nmFade, ZL_Math::Clamp01(ZL_Math::InverseLerp(45.f, 30.f, itZDist)));
-				else if (!IsTravel && itZDist <  4.f) it->Mat.SetUniformFloat(nmFade, ZL_Math::Clamp01(ZL_Math::InverseLerp(1.f, 4.f, itZDist)));
+				else if (&*it != TravelPlanet && &*it != LastTravelPlanet && itZDist <  4.f) it->Mat.SetUniformFloat(nmFade, ZL_Math::Clamp01(ZL_Math::InverseLerp(1.f, 4.f, itZDist)));
 				else it->Mat.SetUniformFloat(nmFade, 1.f);
-				if (!IsTravel && (itZDist < 3.f || itZDist > 35.f || it->IsHome)) continue;
+				if (&*it != TravelPlanet && (itZDist < 3.f || itZDist > 35.f || it->IsHome || it->Cleared)) continue;
 				const float distZ = 25.f - itZDist;
 				const ZL_Vector PlanetOnScreen = Camera.WorldToScreen(it->Mtx.GetOrigin());
 				const float DistSq = PlanetOnScreen.GetDistanceSq(ZL_Input::Pointer()) + (distZ*distZ*3);
