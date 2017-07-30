@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectName>CosmicInflux</ProjectName>
+    <DataAssets>Data</DataAssets>
+    <ZillaLibDir>../ZillaLib</ZillaLibDir>
+    <NoXPSupport>1</NoXPSupport>
+    <ProjectGuid>{759D55E9-A9DF-094A-C732-D454889134CF}</ProjectGuid>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <Import Project="$(ZillaLibDir)/ZillaApp-vs.props" />
+  <ItemGroup>
+    <ClInclude Include="include.h" />
+    <ClCompile Include="main.cpp" />
+    <ResourceCompile Include="CosmicInflux.rc" />
+  </ItemGroup>
+</Project>
