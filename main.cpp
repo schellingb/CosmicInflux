@@ -95,15 +95,19 @@ static struct sCosmicInflux : public ZL_Application
 		ZL_Audio::Init();
 		ZL_Input::Init();
 
+		ZL_Vector3::Forward = ZL_Vector3(0,0,1);
+		ZL_Vector3::Right = ZL_Vector3(1,0,0);
+		ZL_Vector3::Up = ZL_Vector3(0,1,0);
+
 		fntMain = ZL_Font("Data/vipond_chubby.ttf.zip", 120).SetCharSpacing(5.5f);
 		TextBuffer = ZL_TextBuffer(fntMain);
 
 		srfLudumDare = ZL_Surface("Data/ludumdare.png").SetDrawOrigin(ZL_Origin::BottomRight);
 
 		using namespace ZL_MaterialModes;
-		matShip = ZL_Material(MM_VERTEXCOLOR | MM_LIT);
+		matShip = ZL_Material(MM_VERTEXCOLOR);
 
-		mshPlanet = ZL_Mesh::BuildSphere(1, 63).SetMaterial(0, ZL_Material(MM_DIFFUSEFUNC | MR_TEXCOORD | MM_LIT | MM_SPECULARSTATIC,
+		mshPlanet = ZL_Mesh::BuildSphere(1, 63).SetMaterial(0, ZL_Material(MM_DIFFUSEFUNC | MR_TEXCOORD | MM_SPECULARSTATIC,
 			ZL_GLSL_IMPORTSNOISE()
 			"uniform vec3 cola,colb,colw,colc;"
 			"uniform float facs,facw,facc,fade;"
@@ -121,7 +125,7 @@ static struct sCosmicInflux : public ZL_Application
 		mshPlanet.GetMaterial().SetUniformFloat(nmFade, 1.f);
 		mshPlanet.GetMaterial().SetUniformVec3("colc", ZL_Color::White);
 
-		mshSky = ZL_Mesh::BuildSphere(50, 20, true).SetMaterial(0, ZL_Material(MM_DIFFUSEFUNC | MR_TEXCOORD,
+		mshSky = ZL_Mesh::BuildSphere(50, 20, true).SetMaterial(0, ZL_Material(MM_DIFFUSEFUNC | MR_TEXCOORD | MO_UNLIT,
 			ZL_GLSL_IMPORTSNOISE()
 			"vec4 CalcDiffuse()"
 			"{"
@@ -130,7 +134,7 @@ static struct sCosmicInflux : public ZL_Application
 			"}"
 		));
 
-		mshSun = ZL_Mesh::BuildSphere(1, 23).SetMaterial(0, ZL_Material(MM_STATICCOLOR).SetUniformVec4(Z3U_COLOR, ZL_Color::Orange));
+		mshSun = ZL_Mesh::BuildSphere(1, 23).SetMaterial(0, ZL_Material(MM_STATICCOLOR | MO_UNLIT).SetUniformVec4(Z3U_COLOR, ZL_Color::Orange));
 		Suns[0].SetPosition(ZLV3(15,0,20)).SetFalloff(80);
 		Suns[1].SetPosition(ZLV3(-15,0,120)).SetFalloff(80);
 
@@ -173,7 +177,7 @@ static struct sCosmicInflux : public ZL_Application
 		{
 			ZL_String ShipTexture = ZL_String::format("Data/ship%d.png", RAND_INT_RANGE(1,3));
 			srfShip = ZL_Surface(ShipTexture).SetOrigin(ZL_Origin::Center).SetScale(2.f);
-			mshShip = ZL_Mesh::BuildExtrudePixels(.05f, .1f, ShipTexture, matShip, false, true, .5f, ZL_Matrix::MakeRotateX(PIHALF)*ZL_Matrix::MakeRotateY(-PIHALF));
+			mshShip = ZL_Mesh::BuildExtrudePixels(.05f, .1f, ShipTexture, matShip, false, true, .5f, ZL_Matrix::MakeRotateY(-PIHALF)*ZL_Matrix::MakeRotateX(PIHALF));
 		}
 
 		Player.Pos = ZL_Vector3(0.f);
@@ -192,7 +196,7 @@ static struct sCosmicInflux : public ZL_Application
 			p.GainByPower = (p.ChancePower < RAND_INT_RANGE(0,100) ? 0 : RAND_INT_RANGE(10,100));
 			p.LoseByEnemy = (p.ChanceEnemy < RAND_INT_RANGE(0,100) ? 0 : RAND_INT_RANGE(10,100));
 			p.Radius = RAND_RANGE(.25,1.5);
-			p.Mtx = ZL_Matrix::MakeRotateX(PIHALF) *  ZL_Matrix::MakeRotateY(RAND_RANGE(PI,PI2)) * ZL_Matrix::MakeTranslateScale(ZLV3(RAND_RANGE(1,4)*RAND_SIGN, RAND_RANGE(1,4)*RAND_SIGN, i), ZL_Vector3(p.Radius));
+			p.Mtx = ZL_Matrix::MakeTranslateScale(ZLV3(RAND_RANGE(1,4)*RAND_SIGN, RAND_RANGE(1,4)*RAND_SIGN, i), ZL_Vector3(p.Radius)) *  ZL_Matrix::MakeRotateY(RAND_RANGE(PI,PI2)) * ZL_Matrix::MakeRotateX(PIHALF);
 			p.Mat = mshPlanet.GetMaterial().MakeNewMaterialInstance();
 			p.Mat.SetUniformFloat(nmFade, 1.f);
 			p.Mat.SetUniformVec3("cola", cola);
@@ -208,7 +212,7 @@ static struct sCosmicInflux : public ZL_Application
 		sPlanet Home;
 		Home.Col = ZL_Color::Blue;
 		Home.Radius = 1.f;
-		Home.Mtx = ZL_Matrix::MakeRotateX(PIHALF) *  ZL_Matrix::MakeRotateY(RAND_RANGE(PI,PI2)) * ZL_Matrix::MakeTranslateScale(ZLV3(0, -1.f, GoalDistance + 4.f), ZL_Vector3(Home.Radius));
+		Home.Mtx = ZL_Matrix::MakeTranslateScale(ZLV3(0, -1.f, GoalDistance + 4.f), ZL_Vector3(Home.Radius)) *  ZL_Matrix::MakeRotateY(RAND_RANGE(PI,PI2)) * ZL_Matrix::MakeRotateX(PIHALF);
 		Home.Mat = mshPlanet.GetMaterial().MakeNewMaterialInstance();
 		Home.Mat.SetUniformFloat(nmFade, 1.f);
 		Home.Mat.SetUniformVec3("cola", ZL_Color::Green);
@@ -318,8 +322,9 @@ static struct sCosmicInflux : public ZL_Application
 				else if (&*it != TravelPlanet && &*it != LastTravelPlanet && itZDist <  4.f) it->Mat.SetUniformFloat(nmFade, ZL_Math::Clamp01(ZL_Math::InverseLerp(1.f, 4.f, itZDist)));
 				else it->Mat.SetUniformFloat(nmFade, 1.f);
 				if (&*it != TravelPlanet && (itZDist < 3.f || itZDist > 35.f || it->IsHome || it->Cleared)) continue;
+				bool IsOutsideOfView;
+				const ZL_Vector PlanetOnScreen = Camera.WorldToScreen(it->Mtx.GetOrigin(), &IsOutsideOfView);
 				const float distZ = 25.f - itZDist;
-				const ZL_Vector PlanetOnScreen = Camera.WorldToScreen(it->Mtx.GetOrigin());
 				const float DistSq = PlanetOnScreen.GetDistanceSq(ZL_Input::Pointer()) + (distZ*distZ*3);
 				if (DistSq > ClosestDistSq) continue;
 				HighlightPlanet = &*it;
@@ -365,7 +370,7 @@ static struct sCosmicInflux : public ZL_Application
 
 			if (HighlightPlanet)
 			{
-				const ZL_Vector3 WorldCameraRight = Camera.GetVPMatrix().GetInverted().TransformDirection(ZL_Vector3::Right).Norm();
+				const ZL_Vector3 WorldCameraRight = Camera.GetRightDirection();
 				const float ClosestPlanetRadius = Camera.WorldToScreen(HighlightPlanet->Mtx.GetOrigin() + WorldCameraRight * HighlightPlanet->Radius).GetDistance(HighlightPlanetScreen);
 				const ZL_Rectf RecPlanet(HighlightPlanetScreen, ClosestPlanetRadius + 5.f);
 				if (!ScanPlanet && ZL_Input::Clicked(RecPlanet))
