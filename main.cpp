@@ -309,21 +309,21 @@ static struct sCosmicInflux : public ZL_Application
 		else if (ScanPlanet)
 		{
 			HighlightPlanet = ScanPlanet;
-			HighlightPlanetScreen = Camera.WorldToScreen(ScanPlanet->Mtx.GetOrigin());
+			HighlightPlanetScreen = Camera.WorldToScreen(ScanPlanet->Mtx.GetTranslate());
 		}
 		else if (!LandedPlanet && Player.Power)
 		{
 			float ClosestDistSq = S_MAX;
 			for (vector<sPlanet>::iterator it = Planets.begin(); it != Planets.end(); ++it)
 			{
-				const float itZDist = it->Mtx.GetOrigin().z - Player.Pos.z;
+				const float itZDist = it->Mtx.GetTranslate().z - Player.Pos.z;
 				if (itZDist < -2.f || itZDist > 60.f) continue;
 				if (itZDist > 30.f) it->Mat.SetUniformFloat(nmFade, ZL_Math::Clamp01(ZL_Math::InverseLerp(45.f, 30.f, itZDist)));
 				else if (&*it != TravelPlanet && &*it != LastTravelPlanet && itZDist <  4.f) it->Mat.SetUniformFloat(nmFade, ZL_Math::Clamp01(ZL_Math::InverseLerp(1.f, 4.f, itZDist)));
 				else it->Mat.SetUniformFloat(nmFade, 1.f);
 				if (&*it != TravelPlanet && (itZDist < 3.f || itZDist > 35.f || it->IsHome || it->Cleared)) continue;
 				bool IsOutsideOfView;
-				const ZL_Vector PlanetOnScreen = Camera.WorldToScreen(it->Mtx.GetOrigin(), &IsOutsideOfView);
+				const ZL_Vector PlanetOnScreen = Camera.WorldToScreen(it->Mtx.GetTranslate(), &IsOutsideOfView);
 				const float distZ = 25.f - itZDist;
 				const float DistSq = PlanetOnScreen.GetDistanceSq(ZL_Input::Pointer()) + (distZ*distZ*3);
 				if (DistSq > ClosestDistSq) continue;
@@ -336,7 +336,7 @@ static struct sCosmicInflux : public ZL_Application
 		RenderList.Reset();
 		for (vector<sPlanet>::iterator it = Planets.begin(); it != Planets.end(); ++it)
 		{
-			const float itZDist = it->Mtx.GetOrigin().z - Player.Pos.z;
+			const float itZDist = it->Mtx.GetTranslate().z - Player.Pos.z;
 			if (Mode != MODE_INTRO && (itZDist < -2.f || itZDist > 60.f)) continue;
 			mshPlanet.SetMaterial(it->Mat);
 			RenderList.Add(mshPlanet, it->Mtx);
@@ -371,7 +371,7 @@ static struct sCosmicInflux : public ZL_Application
 			if (HighlightPlanet)
 			{
 				const ZL_Vector3 WorldCameraRight = Camera.GetRightDirection();
-				const float ClosestPlanetRadius = Camera.WorldToScreen(HighlightPlanet->Mtx.GetOrigin() + WorldCameraRight * HighlightPlanet->Radius).GetDistance(HighlightPlanetScreen);
+				const float ClosestPlanetRadius = Camera.WorldToScreen(HighlightPlanet->Mtx.GetTranslate() + WorldCameraRight * HighlightPlanet->Radius).GetDistance(HighlightPlanetScreen);
 				const ZL_Rectf RecPlanet(HighlightPlanetScreen, ClosestPlanetRadius + 5.f);
 				if (!ScanPlanet && ZL_Input::Clicked(RecPlanet))
 				{
@@ -397,7 +397,7 @@ static struct sCosmicInflux : public ZL_Application
 			ZL_Display::DrawLine(150, 15, ZLFROMW(15), 15, ZLWHITE);
 			for (vector<sPlanet>::iterator it = Planets.begin(); it != Planets.end(); ++it)
 			{
-				const float PlanetTimelineX = ZL_Math::Lerp(150, ZLFROMW(15), ZL_Math::InverseLerp(0.f, GoalDistance, it->Mtx.GetOrigin().z));
+				const float PlanetTimelineX = ZL_Math::Lerp(150, ZLFROMW(15), ZL_Math::InverseLerp(0.f, GoalDistance, it->Mtx.GetTranslate().z));
 				if (&*it == HighlightPlanet) ZL_Display::FillCircle(PlanetTimelineX, 15, 3 + 4 * it->Radius, ZL_Color::Cyan);
 				if (&*it == ScanPlanet)      ZL_Display::FillCircle(PlanetTimelineX, 15, 3 + 4 * it->Radius, ZL_Color::Green);
 				if (&*it == TravelPlanet)    ZL_Display::FillCircle(PlanetTimelineX, 15, 3 + 4 * it->Radius, ZL_Color::Yellow);
@@ -413,7 +413,7 @@ static struct sCosmicInflux : public ZL_Application
 			if (Mode == MODE_SCANNING)
 			{
 				const ZL_Rectf RecMenu(ZLCENTER, ZLV(300, 150));
-				const ZL_Vector3 TravelTarget = ScanPlanet->Mtx.GetOrigin() + ZLV3(0, ssign(ScanPlanet->Mtx.GetOrigin().y) * -ScanPlanet->Radius, -ScanPlanet->Radius - .2f);
+				const ZL_Vector3 TravelTarget = ScanPlanet->Mtx.GetTranslate() + ZLV3(0, ssign(ScanPlanet->Mtx.GetTranslate().y) * -ScanPlanet->Radius, -ScanPlanet->Radius - .2f);
 				const ZL_Vector3 TravelDelta = (TravelTarget - Player.Pos);
 				const float TravelDistance = TravelDelta.GetLength();
 				const ZL_Vector3 TravelDir = TravelDelta / TravelDistance;
