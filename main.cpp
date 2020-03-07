@@ -99,7 +99,7 @@ static struct sCosmicInflux : public ZL_Application
 		ZL_Vector3::Right = ZL_Vector3(1,0,0);
 		ZL_Vector3::Up = ZL_Vector3(0,1,0);
 
-		fntMain = ZL_Font("Data/vipond_chubby.ttf.zip", 120).SetCharSpacing(5.5f);
+		fntMain = ZL_Font("Data/vipond_chubby.ttf.zip", 120).SetCharSpacing(-10.0f);
 		TextBuffer = ZL_TextBuffer(fntMain);
 
 		srfLudumDare = ZL_Surface("Data/ludumdare.png").SetDrawOrigin(ZL_Origin::BottomRight);
